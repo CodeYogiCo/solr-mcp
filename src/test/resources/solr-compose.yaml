@@ -1,0 +1,9 @@
+# Minimal single-node SolrCloud (embedded ZooKeeper) used by the functional tests
+# via Testcontainers. `solr-foreground -c` runs Solr in cloud mode so the
+# Collections API (create-collection / list-collections) works.
+services:
+  solr:
+    image: solr:9.10-slim
+    command: [ "solr-foreground", "-c" ]
+    ports:
+      - "8983"

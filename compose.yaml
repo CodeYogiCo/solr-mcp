@@ -1,0 +1,15 @@
+# Local development Solr (single-node SolrCloud with embedded ZooKeeper).
+#   docker compose up -d
+# Then run the MCP server with SOLR_URL=http://localhost:8983/solr/
+services:
+  solr:
+    image: solr:9.10-slim
+    container_name: solr-mcp
+    command: [ "solr-foreground", "-c" ]
+    ports:
+      - "8983:8983"
+    volumes:
+      - solr-data:/var/solr
+
+volumes:
+  solr-data:
