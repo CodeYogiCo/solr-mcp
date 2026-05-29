@@ -1,8 +1,7 @@
 class SolrMcp < Formula
   desc "MCP server for Apache Solr (http4k + MCP Java SDK + SolrJ)"
   homepage "https://github.com/CodeYogiCo/solr-mcp"
-  version "0.1.0"
-  url "https://github.com/CodeYogiCo/solr-mcp/releases/download/v#{version}/solr-mcp-#{version}-all.jar"
+  url "https://github.com/CodeYogiCo/solr-mcp/releases/download/v0.1.0/solr-mcp-0.1.0-all.jar"
   sha256 "33727cf52c7095c6cfc7706d7ccf6db5529e19fb82e3ebbde111c0844faef188"
   license "Apache-2.0"
 
