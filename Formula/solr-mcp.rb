@@ -3,7 +3,7 @@ class SolrMcp < Formula
   homepage "https://github.com/CodeYogiCo/solr-mcp"
   version "0.1.0"
   url "https://github.com/CodeYogiCo/solr-mcp/releases/download/v#{version}/solr-mcp-#{version}-all.jar"
-  sha256 "REPLACE_WITH_RELEASE_JAR_SHA256"
+  sha256 "33727cf52c7095c6cfc7706d7ccf6db5529e19fb82e3ebbde111c0844faef188"
   license "Apache-2.0"
 
   depends_on "openjdk@21"
