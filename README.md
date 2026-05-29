@@ -73,6 +73,14 @@ docker run -p 8080:8080 --rm -e PROFILES=http \
   ghcr.io/codeyogico/solr-mcp:latest
 ```
 
+The image is published to GHCR by [`docker.yml`](.github/workflows/docker.yml) on
+every push to `main` and on `v*` tags.
+
+> **Note:** GHCR packages are **private** by default. To let anyone `docker pull`
+> without authenticating, make it public once: GitHub → CodeYogiCo → Packages →
+> `solr-mcp` → *Package settings* → **Change visibility → Public**. While private,
+> pull after `echo $TOKEN | docker login ghcr.io -u <user> --password-stdin`.
+
 Build the image yourself (no Dockerfile needed — Jib):
 
 ```bash
@@ -108,7 +116,30 @@ PROFILES=http java -jar build/libs/solr-mcp-0.1.0-all.jar
 | `OAUTH2_ISSUER_URI` | _(unset)_ | If set, HTTP mode validates bearer JWTs against this issuer's JWKS |
 | `MCP_CORS_ALLOWED_ORIGINS` | `http://localhost:6274,http://127.0.0.1:6274` | CORS allow-list (MCP Inspector) |
 
+## Using it with an MCP client
+
+Make sure Solr is running and reachable (`docker compose up -d` starts one on
+`localhost:8983`). Then point your client at the server.
+
 ### Claude Desktop (STDIO)
+
+Edit `claude_desktop_config.json` (macOS:
+`~/Library/Application Support/Claude/claude_desktop_config.json`) and restart Claude.
+
+**Via Homebrew install:**
+
+```json
+{
+  "mcpServers": {
+    "solr-mcp": {
+      "command": "solr-mcp",
+      "env": { "SOLR_URL": "http://localhost:8983/solr/" }
+    }
+  }
+}
+```
+
+**Via the jar:**
 
 ```json
 {
@@ -121,6 +152,49 @@ PROFILES=http java -jar build/libs/solr-mcp-0.1.0-all.jar
   }
 }
 ```
+
+**Via Docker:**
+
+```json
+{
+  "mcpServers": {
+    "solr-mcp": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm",
+        "-e", "SOLR_URL=http://host.docker.internal:8983/solr/",
+        "ghcr.io/codeyogico/solr-mcp:latest"]
+    }
+  }
+}
+```
+
+### Claude Code (CLI)
+
+```bash
+# STDIO via Homebrew
+claude mcp add --transport stdio -e SOLR_URL=http://localhost:8983/solr/ solr-mcp -- solr-mcp
+
+# or HTTP (this server speaks the SSE transport): start it, then add it
+PROFILES=http solr-mcp &
+claude mcp add --transport sse solr-mcp http://localhost:8080/sse
+```
+
+### MCP Inspector (HTTP mode)
+
+```bash
+PROFILES=http solr-mcp                       # or the docker/jar HTTP command above
+npx @modelcontextprotocol/inspector          # connect to http://localhost:8080/sse
+```
+
+### Try it
+
+Once connected, ask the assistant things like:
+
+- *"List the Solr collections."* → `list-collections`
+- *"Create a collection called `films`."* → `create-collection`
+- *"Index this into films: `[{"id":"1","name":"The Matrix","genre_s":"scifi"}]`"* → `index-json-documents`
+- *"Search films for name:Matrix."* → `search`
+- *"What's the schema of films?"* → `get-schema`
 
 ## Tests
 
