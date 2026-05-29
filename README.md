@@ -40,7 +40,47 @@ Selected by the `PROFILES` env var (default `stdio`):
   - `POST /message?sessionId=…` delivers JSON-RPC messages,
   - `GET /health` for probes.
 
-## Build & run
+## Install
+
+### Homebrew (easiest)
+
+```bash
+# one-off install from this repo's formula
+brew install https://raw.githubusercontent.com/CodeYogiCo/solr-mcp/main/Formula/solr-mcp.rb
+
+# or as a tap
+brew tap codeyogico/solr-mcp https://github.com/CodeYogiCo/solr-mcp
+brew install solr-mcp
+```
+
+Then:
+
+```bash
+solr-mcp                    # STDIO (default)
+PROFILES=http solr-mcp      # HTTP on :8080
+```
+
+### Docker (Jib image)
+
+```bash
+# STDIO (Claude Desktop)
+docker run -i --rm -e SOLR_URL=http://host.docker.internal:8983/solr/ \
+  ghcr.io/codeyogico/solr-mcp:latest
+
+# HTTP
+docker run -p 8080:8080 --rm -e PROFILES=http \
+  -e SOLR_URL=http://host.docker.internal:8983/solr/ \
+  ghcr.io/codeyogico/solr-mcp:latest
+```
+
+Build the image yourself (no Dockerfile needed — Jib):
+
+```bash
+./gradlew jibDockerBuild     # -> local Docker: ghcr.io/codeyogico/solr-mcp:<version>
+./gradlew jib                # build + push (multi-arch amd64/arm64) to the registry
+```
+
+## Build & run from source
 
 Requires JDK 21+ and Docker (for Solr).
 

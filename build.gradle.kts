@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version "2.3.21"
     application
     id("com.gradleup.shadow") version "8.3.5"
+    id("com.google.cloud.tools.jib") version "3.4.4"
 }
 
 group = "co.codeyogi"
@@ -67,4 +68,30 @@ tasks.test {
 tasks.shadowJar {
     archiveClassifier.set("all") // runnable fat jar: solr-mcp-<version>-all.jar
     mergeServiceFiles() // preserve META-INF/services (MCP JSON mapper SPI, etc.)
+}
+
+// Container image, no Dockerfile/daemon required.
+//   ./gradlew jibDockerBuild   -> build into local Docker (solr-mcp:<version>)
+//   ./gradlew jib              -> build and push to the registry
+// Jib uses a clean `java -cp ... MainKt` entrypoint (no launcher script writing
+// to stdout), which keeps the MCP STDIO JSON-RPC stream uncorrupted. The default
+// profile is stdio; set PROFILES=http at runtime for HTTP mode.
+jib {
+    from {
+        image = "eclipse-temurin:21-jre"
+        platforms {
+            platform { architecture = "amd64"; os = "linux" }
+            platform { architecture = "arm64"; os = "linux" }
+        }
+    }
+    to {
+        image = "ghcr.io/codeyogico/solr-mcp"
+        tags = setOf("latest", version.toString())
+    }
+    container {
+        mainClass = "co.codeyogi.solrmcp.MainKt"
+        ports = listOf("8080")
+        environment = mapOf("PROFILES" to "stdio", "SOLR_URL" to "http://localhost:8983/solr/")
+        creationTime.set("USE_CURRENT_TIMESTAMP")
+    }
 }
