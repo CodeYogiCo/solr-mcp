@@ -1,0 +1,37 @@
+name: Docker image
+
+# Builds and pushes the multi-arch (amd64/arm64) container image to GHCR with Jib.
+# Pushes :latest + the project version on main, and on v* tags.
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+# Opt into Node 24 for JS actions (silences the Node 20 deprecation notice).
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build and push image (Jib, multi-arch)
+        run: >
+          ./gradlew jib --no-daemon
+          -Djib.to.auth.username=${{ github.actor }}
+          -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }}
